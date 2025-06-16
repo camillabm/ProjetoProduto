@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Jornada empreendedora: a biotecnologia para além do laboratório</title>
+    <style>
+        body { 
+            font-family: 'Courier New', monospace; 
+            margin: 20px; 
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .status, .tabuleiro, .eventos, .descricao { 
+            border: 3px solid #000; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            background-color: #fff;
+            box-shadow: 5px 5px 0px #888;
+        }
+        button { 
+            margin: 8px; 
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0px #ccc;
+        }
+        .pixel-art {
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        .character {
+            width: 200px;
+            height: 200px;
+            margin: 10px auto;
+            display: block;
+        }
+        .enemy {
+            width: 200px;
+            height: 200px;
+            margin: 10px auto;
+            display: block;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 30px;
+            background-color: #4CAF50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .stat {
+            text-align: center;
+            padding: 10px;
+            background-color: #e8f4ea;
+            border: 2px solid #2c3e50;
+            border-radius: 5px;
+        }
+        .battle-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .vs {
+            font-size: 24px;
+            margin: 0 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Jornada empreendedora: a biotecnologia para além do laboratório</h1>
+
+<div id="status" class="status">
+    <div class="stats">
+        <div class="stat" id="vida-stat">Vida: 0</div>
+        <div class="stat" id="dinheiro-stat">Dinheiro: R$0</div>
+        <div class="stat" id="dano-stat">Dano: 0</div>
+        <div class="stat" id="posicao-stat">Casa: 0</div>
+    </div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progresso" style="width: 0%">0%</div>
+    </div>
+</div>
+<div id="descricao" class="descricao"></div>
+<div id="jogo" class="tabuleiro"></div>
+
+<script>
+let statusJogador = {
+    vida: 0,
+    dinheiro: 0,
+    dano: 0,
+    posicao: 1,
+    empresa: {}
+};
+
+// Mapeamento para os códigos de imagem
+const codigosImagem = {
+    // Porte
+    "MEI": "1",
+    "ME": "2",
+    "EPP": "3",
+    
+    // Natureza Jurídica
+    "EI": "1",
+    "SLU": "2",
+    "LTDA": "3",
+    
+    // CNAE
+    "Comércio": "1",
+    "Serviços": "2",
+    "Indústria": "3",
+    
+    // Regime Tributário
+    "Simples Nacional": "1",
+    "Lucro Presumido": "2",
+    "Lucro Real": "3"
+};
+
+const combinacoesValidas = {
+    MEI: { naturezas: ["EI"], cnaes: ["Comércio", "Serviços"], regimes: ["Simples Nacional"] },
+    ME: { naturezas: ["EI", "SLU", "LTDA"], cnaes: ["Comércio", "Serviços", "Indústria"], regimes: ["Simples Nacional", "Lucro Presumido", "Lucro Real"] },
+    EPP: { naturezas: ["EI", "SLU", "LTDA"], cnaes: ["Comércio", "Serviços", "Indústria"], regimes: ["Simples Nacional", "Lucro Presumido", "Lucro Real"] }
+};
+
+const descricoes = {
+    MEI: "MEI (Microempreendedor Individual): Pequenos negócios com menos burocracia e limite de faturamento.",
+    ME: "ME (Microempresa): Faturamento maior que MEI, mais obrigações, mas mais possibilidades de atuação.",
+    EPP: "EPP (Empresa de Pequeno Porte): Para negócios com faturamento ainda maior, com mais exigências legais.",
+    EI: "EI (Empresário Individual): O empresário responde com o próprio patrimônio.",
+    SLU: "SLU (Sociedade Limitada Unipessoal): Um único dono, mas com proteção patrimonial.",
+    LTDA: "LTDA (Sociedade Limitada): Sociedade com dois ou mais sócios, com responsabilidade limitada.",
+    Comércio: "Comércio: Atividades de venda de produtos físicos ou online.",
+    Serviços: "Serviços: Prestação de serviços como consultoria, saúde, tecnologia, etc.",
+    Indústria: "Indústria: Produção e transformação de bens, com maior carga regulatória.",
+    "Simples Nacional": "Simples Nacional: Regime unificado e simplificado de tributos, com alíquotas reduzidas.",
+    "Lucro Presumido": "Lucro Presumido: Tributação sobre uma margem de lucro pré-estimada pela Receita Federal.",
+    "Lucro Real": "Lucro Real: Tributação sobre o lucro real apurado, com maior complexidade contábil."
+};
+
+const explicacoesEtapas = {
+    1: "📄 Elaboração do Contrato Social: Documento que define regras, sócios e capital da empresa.",
+    2: "📄 Contrato Social (continuação): Definição de cláusulas de proteção aos sócios.",
+    3: "🏢 Registro na Junta Comercial: Etapa de legalização da empresa no órgão estadual.",
+    4: "🏢 Junta Comercial (continuação): Escolha entre registro digital ou presencial.",
+    6: "🆔 Obtenção do CNPJ: Cadastro da sua empresa na Receita Federal.",
+    7: "🆔 CNPJ (continuação): Escolha sobre incluir atividades extras (CNAEs).",
+    8: "🧾 Inscrição Estadual: Obrigatória para quem vende produtos e paga ICMS.",
+    9: "🧾 Inscrição Estadual (continuação): Possibilidade de pagar taxa extra para agilizar."
+};
+
+const perguntasPorCasa = {
+    1: { pergunta: "Contrato Social: Você prefere contratar um advogado especializado ou usar um modelo gratuito da internet?", op1: {texto:"💸 R$150: Advogado (+10 vida, +5 dano)", vida:10, dano:5, dinheiro:-150}, op2:{texto:"Grátis: Modelo da internet (-10 vida)", vida:-10, dano:0, dinheiro:0} },
+    2: { pergunta: "Incluir cláusulas de proteção de sócios?", op1:{texto:"💸 R$100: Sim (+5 vida, +5 dano)", vida:5, dano:5, dinheiro:-100}, op2:{texto:"Grátis: Não (-10 vida)", vida:-10, dano:0, dinheiro:0} },
+    3: { pergunta: "Contratar despachante para registro ou fazer sozinho?", op1:{texto:"💸 R$120: Despachante (+10 vida)", vida:10, dano:0, dinheiro:-120}, op2:{texto:"Grátis: Sozinho (-5 vida)", vida:-5, dano:0, dinheiro:0} },
+    4: { pergunta: "Registrar digital ou presencial?", op1:{texto:"Grátis: Digital (+5 dano)", vida:0, dano:5, dinheiro:0}, op2:{texto:"Grátis: Presencial (-5 vida)", vida:-5, dano:0, dinheiro:0} },
+    6: { pergunta: "Contratar contador para CNPJ?", op1:{texto:"💸 R$100: Sim (+5 vida, +5 dano)", vida:5, dano:5, dinheiro:-100}, op2:{texto:"Grátis: Não (-10 vida)", vida:-10, dano:0, dinheiro:0} },
+    7: { pergunta: "Incluir mais atividades no CNAE pagando taxa extra?", op1:{texto:"💸 R$80: Sim (+5 dano)", vida:0, dano:5, dinheiro:-80}, op2:{texto:"Grátis: Não (Sem efeito)", vida:0, dano:0, dinheiro:0} },
+    8: { pergunta: "Pagar consultoria para Inscrição Estadual?", op1:{texto:"💸 R$120: Sim (+10 vida)", vida:10, dano:0, dinheiro:-120}, op2:{texto:"Grátis: Não (-10 vida)", vida:-10, dano:0, dinheiro:0} },
+    9: { pergunta: "Antecipar processo pagando taxa urgente?", op1:{texto:"💸 R$80: Sim (+5 dano)", vida:0, dano:5, dinheiro:-80}, op2:{texto:"Grátis: Não (Sem efeito)", vida:0, dano:0, dinheiro:0} }
+};
+
+function mostrarDescricao(texto) {
+    document.getElementById("descricao").innerHTML = `<div style="background-color:#f9f9f9; padding:15px; border-left:4px solid #4CAF50;">${texto.replace(/\n\n/g, '<br><br>')}</div>`;
+}
+
+function mostrarStatus() {
+    document.getElementById("vida-stat").innerHTML = `❤️ Vida: ${statusJogador.vida}`;
+    document.getElementById("dinheiro-stat").innerHTML = `💰 Dinheiro: R$${statusJogador.dinheiro}`;
+    document.getElementById("dano-stat").innerHTML = `⚔️ Dano: ${statusJogador.dano}`;
+    document.getElementById("posicao-stat").innerHTML = `✅ Etapa: ${statusJogador.posicao}/10`;
+    
+    let progresso = (statusJogador.posicao / 10) * 100;
+    document.getElementById("progresso").style.width = `${progresso}%`;
+    document.getElementById("progresso").innerText = `${Math.round(progresso)}%`;
+}
+
+// Função para gerar o nome da imagem do jogador
+function getPlayerImage() {
+    if (!statusJogador.empresa.porte || !statusJogador.empresa.natureza || 
+        !statusJogador.empresa.cnae || !statusJogador.empresa.regime) {
+        return "jogador.png"; // Imagem padrão se alguma escolha estiver faltando
+    }
+    
+    const porteCode = codigosImagem[statusJogador.empresa.porte];
+    const naturezaCode = codigosImagem[statusJogador.empresa.natureza];
+    const cnaeCode = codigosImagem[statusJogador.empresa.cnae];
+    const regimeCode = codigosImagem[statusJogador.empresa.regime];
+    
+    return `jogador_${porteCode}_${naturezaCode}_${cnaeCode}_${regimeCode}.png`;
+}
+
+// Função para mostrar a imagem do jogador
+function mostrarJogador() {
+    const imgSrc = getPlayerImage();
+    return `<img src="${imgSrc}" class="character pixel-art" alt="Personagem do Jogador" onerror="this.src='jogador.png'">`;
+}
+
+function iniciarEscolha() {
+    let html = `
+        <div style="text-align:center;">
+            ${mostrarJogador()}
+            <h3>Escolha o Porte da Empresa:</h3>
+            <button onclick="escolherPorte('MEI')" style="background-color:#3498db;">MEI</button>
+            <button onclick="escolherPorte('ME')" style="background-color:#e74c3c;">ME</button>
+            <button onclick="escolherPorte('EPP')" style="background-color:#9b59b6;">EPP</button>
+        </div>
+    `;
+
+    let texto = "Portes de Empresa:\n\n";
+    ["MEI", "ME", "EPP"].forEach(p => texto += descricoes[p] + "\n\n");
+    mostrarDescricao(texto);
+
+    document.getElementById("jogo").innerHTML = html;
+}
+
+function escolherPorte(porte) {
+    statusJogador.empresa.porte = porte;
+
+    let html = `
+        <div style="text-align:center;">
+            ${mostrarJogador()}
+            <h3>Escolha a Natureza Jurídica:</h3>
+    `;
+    
+    combinacoesValidas[porte].naturezas.forEach(natureza => {
+        html += `<button onclick="escolherNatureza('${natureza}')" style="background-color:#${porte === 'MEI' ? '3498db' : porte === 'ME' ? 'e74c3c' : '9b59b6'};">${natureza}</button>`;
+    });
+
+    html += `</div>`;
+
+    let texto = "Naturezas Jurídicas:\n\n";
+    combinacoesValidas[porte].naturezas.forEach(n => texto += descricoes[n] + "\n\n");
+    mostrarDescricao(texto);
+
+    document.getElementById("jogo").innerHTML = html;
+}
+
+function escolherNatureza(natureza) {
+    statusJogador.empresa.natureza = natureza;
+
+    let html = `
+        <div style="text-align:center;">
+            ${mostrarJogador()}
+            <h3>Escolha o CNAE:</h3>
+    `;
+    
+    combinacoesValidas[statusJogador.empresa.porte].cnaes.forEach(cnae => {
+        html += `<button onclick="escolherCNAE('${cnae}')" style="background-color:#${statusJogador.empresa.porte === 'MEI' ? '3498db' : statusJogador.empresa.porte === 'ME' ? 'e74c3c' : '9b59b6'};">${cnae}</button>`;
+    });
+
+    html += `</div>`;
+
+    let texto = "CNAEs disponíveis:\n\n";
+    combinacoesValidas[statusJogador.empresa.porte].cnaes.forEach(c => texto += descricoes[c] + "\n\n");
+    mostrarDescricao(texto);
+
+    document.getElementById("jogo").innerHTML = html;
+}
+
+function escolherCNAE(cnae) {
+    statusJogador.empresa.cnae = cnae;
+
+    let html = `
+        <div style="text-align:center;">
+            ${mostrarJogador()}
+            <h3>Escolha o Regime Tributário:</h3>
+    `;
+    
+    combinacoesValidas[statusJogador.empresa.porte].regimes.forEach(regime => {
+        html += `<button onclick="finalizarEscolha('${regime}')" style="background-color:#${statusJogador.empresa.porte === 'MEI' ? '3498db' : statusJogador.empresa.porte === 'ME' ? 'e74c3c' : '9b59b6'};">${regime}</button>`;
+    });
+
+    html += `</div>`;
+
+    let texto = "Regimes Tributários:\n\n";
+    combinacoesValidas[statusJogador.empresa.porte].regimes.forEach(r => texto += descricoes[r] + "\n\n");
+    mostrarDescricao(texto);
+
+    document.getElementById("jogo").innerHTML = html;
+}
+
+function finalizarEscolha(regime) {
+    statusJogador.empresa.regime = regime;
+    document.getElementById("descricao").innerText = "";
+    inicializarStatus();
+    mostrarStatus();
+    avancarCasa();
+}
+
+function inicializarStatus() {
+    let vida = 80, dinheiro = 300, dano = 5; // Reduzi valores iniciais
+    if (statusJogador.empresa.porte === "MEI") { vida = 60; dinheiro = 350; dano = 4; }
+    if (statusJogador.empresa.porte === "EPP") { vida = 100; dinheiro = 250; dano = 6; }
+
+    // Bônus menores para escolhas
+    if (statusJogador.empresa.natureza === "EI") { dinheiro += 30; dano += 1; }
+    if (statusJogador.empresa.natureza === "SLU") { vida += 5; dano += 2; }
+    if (statusJogador.empresa.natureza === "LTDA") { vida += 10; dinheiro -= 30; dano += 3; }
+
+    if (statusJogador.empresa.cnae === "Comércio") { dano += 3; }
+    if (statusJogador.empresa.cnae === "Serviços") { vida += 5; }
+    if (statusJogador.empresa.cnae === "Indústria") { vida += 3; dano += 3; }
+
+    if (statusJogador.empresa.regime === "Simples Nacional") { vida += 5; dinheiro += 5; }
+    if (statusJogador.empresa.regime === "Lucro Presumido") { dano += 5; }
+    if (statusJogador.empresa.regime === "Lucro Real") { dinheiro += 10; }
+
+    statusJogador.vida = vida;
+    statusJogador.dinheiro = dinheiro;
+    statusJogador.dano = dano;
+}
+
+function avancarCasa() {
+    if (statusJogador.dinheiro < 0) {
+        iniciarCombateSerasa();
+        return;
+    }
+
+    if (statusJogador.posicao > 10) {
+        document.getElementById("jogo").innerHTML = `
+            <div style="text-align:center;">
+                ${mostrarJogador()}
+                <h3 style="color:#27ae60;">Parabéns! Sua empresa foi aberta com sucesso!</h3>
+                <p>Você completou todas as etapas da abertura de empresa!</p>
+                <button onclick="location.reload()" style="background-color:#27ae60;">Jogar Novamente</button>
+            </div>
+        `;
+        mostrarDescricao("Você superou todos os desafios burocráticos e agora sua empresa está pronta para crescer!");
+        return;
+    }
+
+    mostrarStatus();
+
+    if (statusJogador.posicao === 5 || statusJogador.posicao === 10) {
+        iniciarCombate(statusJogador.posicao);
+    } else if (perguntasPorCasa[statusJogador.posicao]) {
+        mostrarPergunta(statusJogador.posicao);
+    } else {
+        statusJogador.posicao++;
+        avancarCasa();
+    }
+}
+
+function mostrarPergunta(casa) {
+    let p = perguntasPorCasa[casa];
+    let explicacao = explicacoesEtapas[casa] || "";
+    
+    document.getElementById("jogo").innerHTML = `
+        <div style="text-align:center;">
+            ${mostrarJogador()}
+            <h3>${p.pergunta}</h3>
+            <div style="background-color:#f9f9f9; padding:10px; margin:10px 0; border-left:4px solid #3498db;">
+                ${explicacao}
+            </div>
+            <button onclick="responder(${p.op1.vida}, ${p.op1.dano}, ${p.op1.dinheiro})" style="background-color:#${p.op1.dinheiro < 0 ? 'e74c3c' : '2ecc71'};">${p.op1.texto}</button>
+            <button onclick="responder(${p.op2.vida}, ${p.op2.dano}, ${p.op2.dinheiro})" style="background-color:#${p.op2.dinheiro < 0 ? 'e74c3c' : p.op2.vida < 0 ? 'f39c12' : '3498db'};">${p.op2.texto}</button>
+        </div>
+    `;
+}
+
+function responder(vidaGanho, danoGanho, dinheiroGanho) {
+    statusJogador.vida += vidaGanho;
+    statusJogador.dano += danoGanho;
+    statusJogador.dinheiro += dinheiroGanho;
+    
+    // Verifica se o jogador morreu ou faliu
+    if (statusJogador.vida <= 0) {
+        gameOver();
+        return;
+    }
+    
+    if (statusJogador.dinheiro < 0) {
+        iniciarCombateSerasa();
+        return;
+    }
+    
+    statusJogador.posicao++;
+    mostrarStatus();
+    avancarCasa();
+}
+
+function iniciarCombate(casa) {
+    let inimigo = casa === 5 ? { 
+        vida: 70,  // Reduzi a vida do Leão da Receita
+        nome: "Leão da Receita Federal", 
+        imagem: "inimigo1.png",
+        danoMin: 10, // Adicionei dano mínimo e máximo
+        danoMax: 20
+    } : { 
+        vida: 100,   // Ajustei a vida da Fiscalização
+        nome: "Fiscalização Municipal", 
+        imagem: "inimigo2.png",
+        danoMin: 10,
+        danoMax: 15
+    };
+    
+    statusJogador.inimigoAtual = inimigo;
+    
+    document.getElementById("jogo").innerHTML = `
+        <div style="text-align:center;">
+            <div class="battle-container">
+                <div>
+                    ${mostrarJogador()}
+                    <div>Você</div>
+                </div>
+                <div class="vs">VS</div>
+                <div>
+                    <img src="${inimigo.imagem}" class="enemy pixel-art" alt="${inimigo.nome}">
+                    <div>${inimigo.nome}</div>
+                </div>
+            </div>
+            <h3>Combate: ${inimigo.nome} - Vida: ${inimigo.vida}</h3>
+            <button onclick="atacar()" style="background-color:#e74c3c;">Atacar (Dano: ${statusJogador.dano})</button>
+            <button onclick="defender()" style="background-color:#3498db;">Defender (Reduz o dano recebido)</button>
+        </div>
+    `;
+}
+
+function atacar() {
+    let inimigo = statusJogador.inimigoAtual;
+    inimigo.vida -= statusJogador.dano;
+    
+    if (inimigo.vida <= 0) {
+        // Adicionando recompensa específica para o Inimigo 1 (Leão da Receita)
+        if (inimigo.nome === "Leão da Receita Federal") {
+            statusJogador.vida += 50;
+            statusJogador.dinheiro += 200;
+            mostrarStatus(); // Atualiza a exibição dos status
+            
+            document.getElementById("jogo").innerHTML = `
+                <div style="text-align:center;">
+                    ${mostrarJogador()}
+                    <h3 style="color:#27ae60;">Você venceu o ${inimigo.nome}!</h3>
+                    <p>Por derrotar o Leão da Receita, você recebeu:</p>
+                    <p>+50 ❤️ Vida e +R$200 💰 Dinheiro</p>
+                    <button onclick="continuar()" style="background-color:#27ae60;">Avançar</button>
+                </div>
+            `;
+        } else {
+            // Recompensa normal para outros inimigos
+            document.getElementById("jogo").innerHTML = `
+                <div style="text-align:center;">
+                    ${mostrarJogador()}
+                    <h3 style="color:#27ae60;">Você venceu o ${inimigo.nome}!</h3>
+                    <p>${inimigo.nome} foi derrotado e você pode continuar sua jornada!</p>
+                    <button onclick="continuar()" style="background-color:#27ae60;">Avançar</button>
+                </div>
+            `;
+        }
+    } else {
+        inimigoAtaca();
+    }
+}
+
+function defender() {
+    statusJogador.vida -= 10;
+    inimigoAtaca();
+}
+
+function inimigoAtaca() {
+    let inimigo = statusJogador.inimigoAtual;
+    let danoInimigo = Math.floor(Math.random() * (inimigo.danoMax - inimigo.danoMin + 1)) + inimigo.danoMin;
+    statusJogador.vida -= danoInimigo;
+    mostrarStatus();
+    
+    // Verifica se o jogador morreu
+    if (statusJogador.vida <= 0) {
+        gameOver();
+        return;
+    }
+    
+    document.getElementById("jogo").innerHTML = `
+        <div style="text-align:center;">
+            <div class="battle-container">
+                <div>
+                    ${mostrarJogador()}
+                    <div>Você</div>
+                </div>
+                <div class="vs">VS</div>
+                <div>
+                    <img src="${inimigo.imagem}" class="enemy pixel-art" alt="${inimigo.nome}">
+                    <div>${inimigo.nome}</div>
+                </div>
+            </div>
+            <h3>${inimigo.nome} te atacou causando ${danoInimigo} de dano!</h3>
+            <p>Vida do inimigo: ${inimigo.vida}</p>
+            <button onclick="atacar()" style="background-color:#e74c3c;">Atacar (Dano: ${statusJogador.dano})</button>
+            <button onclick="defender()" style="background-color:#3498db;">Defender (-5 de dano)</button>
+        </div>
+    `;
+}
+
+function gameOver() {
+    document.getElementById("jogo").innerHTML = `
+        <div style="text-align:center;">
+            <img src="gameover.png" class="enemy pixel-art" alt="Game Over">
+            <h3 style="color:#e74c3c;">Sua empresa faliu!</h3>
+            <h4>Fim de jogo.</h4>
+            <p>Você não conseguiu superar os desafios burocráticos.</p>
+            <button onclick="location.reload()" style="background-color:#3498db;">Tentar Novamente</button>
+        </div>
+    `;
+}
+
+function continuar() {
+    statusJogador.posicao++;
+    avancarCasa();
+}
+
+function iniciarCombateSerasa() {
+    statusJogador.inimigoAtual = { 
+        vida: 80,
+        nome: "SERASA", 
+        imagem: "serasa.png",
+        danoMin: 15, // Dano maior
+        danoMax: 25
+    };
+    
+    document.getElementById("jogo").innerHTML = `
+        <div style="text-align:center;">
+            <div class="battle-container">
+                <div>
+                    ${mostrarJogador()}
+                    <div>Você</div>
+                </div>
+                <div class="vs">VS</div>
+                <div>
+                    <img src="serasa.png" class="enemy pixel-art" alt="SERASA">
+                    <div>${statusJogador.inimigoAtual.nome}</div>
+                </div>
+            </div>
+            <h3 style="color:#e74c3c;">Você entrou em dívida! O ${statusJogador.inimigoAtual.nome} apareceu!</h3>
+            <p>Se vencer, você ganha R$300. Se perder... falência!</p>
+            <button onclick="atacarSerasa()" style="background-color:#e74c3c;">Atacar (Dano: ${statusJogador.dano})</button>
+            <button onclick="defenderSerasa()" style="background-color:#3498db;">Defender (-5 de dano)</button>
+        </div>
+    `;
+}
+
+function atacarSerasa() {
+    let inimigo = statusJogador.inimigoAtual;
+    inimigo.vida -= statusJogador.dano;
+
+    if (inimigo.vida <= 0) {
+        statusJogador.dinheiro += 300;
+        document.getElementById("jogo").innerHTML = `
+            <div style="text-align:center;">
+                ${mostrarJogador()}
+                <h3 style="color:#27ae60;">Você venceu o ${inimigo.nome} e recebeu R$300!</h3>
+                <p>Sua situação financeira foi regularizada e você pode continuar!</p>
+                <button onclick="continuar()" style="background-color:#27ae60;">Continuar o jogo</button>
+            </div>
+        `;
+    } else {
+        inimigoAtacaSerasa();
+    }
+}
+
+function defenderSerasa() {
+    statusJogador.vida -= 5;
+    inimigoAtacaSerasa();
+}
+
+function inimigoAtacaSerasa() {
+    let inimigo = statusJogador.inimigoAtual;
+    let danoInimigo = Math.floor(Math.random() * (inimigo.danoMax - inimigo.danoMin + 1)) + inimigo.danoMin;
+    statusJogador.vida -= danoInimigo;
+
+    if (statusJogador.vida <= 0) {
+        document.getElementById("jogo").innerHTML = `
+            <div style="text-align:center;">
+                <img src="serasa.png" class="enemy pixel-art" alt="SERASA">
+                <h3 style="color:#e74c3c;">Você foi derrotado pelo SERASA...</h3>
+                <h4>Fim de jogo.</h4>
+                <p>Sua empresa não resistiu às dívidas e teve que fechar.</p>
+                <button onclick="location.reload()" style="background-color:#3498db;">Tentar Novamente</button>
+            </div>
+        `;
+    } else {
+        mostrarStatus();
+        document.getElementById("jogo").innerHTML = `
+            <div style="text-align:center;">
+                <div class="battle-container">
+                    <div>
+                        ${mostrarJogador()}
+                        <div>Você</div>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div>
+                        <img src="serasa.png" class="enemy pixel-art" alt="SERASA">
+                        <div>${statusJogador.inimigoAtual.nome}</div>
+                    </div>
+                </div>
+                <h3>${statusJogador.inimigoAtual.nome} te atacou causando ${danoInimigo} de dano!</h3>
+                <p>Vida do inimigo: ${statusJogador.inimigoAtual.vida}</p>
+                <button onclick="atacarSerasa()" style="background-color:#e74c3c;">Atacar (Dano: ${statusJogador.dano})</button>
+                <button onclick="defenderSerasa()" style="background-color:#3498db;">Defender (-5 de dano)</button>
+            </div>
+        `;
+    }
+}
+
+iniciarEscolha();
+</script>
+
+</body>
+</html>
