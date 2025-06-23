@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Jornada empreendedora: a biotecnologia para além do laboratório</title>
+    <title>Jornada Empreendedora: Crie a Próxima Empresa de Sucesso!</title>
     <style>
         body { 
             font-family: 'Courier New', monospace; 
@@ -90,27 +90,69 @@
             font-size: 24px;
             margin: 0 20px;
         }
+        #tela-inicial, #tela-creditos {
+            text-align: center;
+            margin-top: 50px;
+        }
+        #tela-creditos {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-<h1>Jornada empreendedora: a biotecnologia para além do laboratório</h1>
-
-<div id="status" class="status">
-    <div class="stats">
-        <div class="stat" id="vida-stat">Vida: 0</div>
-        <div class="stat" id="dinheiro-stat">Dinheiro: R$0</div>
-        <div class="stat" id="dano-stat">Dano: 0</div>
-        <div class="stat" id="posicao-stat">Casa: 0</div>
-    </div>
-    <div class="progress-container">
-        <div class="progress-bar" id="progresso" style="width: 0%">0%</div>
-    </div>
+<div id="tela-inicial">
+    <h1>Jornada Empreendedora: Crie a Próxima Empresa de Sucesso!</h1>
+    <p>Você é um(a) jovem visionário(a) que se depara com uma sociedade regida por grandes corporações que não oferecem serviços e produtos novos ao mercados, sempre reciclando ideias estrangeiras e protegidos de ameaças burocráticas. Seu sonho: fundar uma empresa a partir da sua ideia original, vista por muitos com grande potencial de sucesso, mas para isso, você deve atravessar as Terras do Empreendedorismo, onde cada decisão molda sua reputação, seus recursos e sua sobrevivência.<br><br>O primeiro passo é escolher sua forma de abertura, uma decisão que determinará sua resiliência nas batalhas contra os Chefes da Burocracia!
+</p>
+    <button onclick="iniciarJogo()">Iniciar</button>
+    <button onclick="mostrarCreditos()">Créditos</button>
 </div>
-<div id="descricao" class="descricao"></div>
-<div id="jogo" class="tabuleiro"></div>
+
+<div id="tela-creditos">
+    <h1>Créditos</h1>
+    <p>UFRGS<br>Desenvolvimento de projetos e produtos biotecnológicos<br></p>
+    <p>Idealizado por:<br>Ana Paula Wives<br>Camilla Bruckmann<br>Isabelli Seiler<br>João Vítor Petrucci<br>Vinícius Schuster<br></p>
+    <p>Prof. Dra. Karina Monteiro</p>
+    <button onclick="voltarInicio()">Voltar</button>
+</div>
+
+<div id="conteudo-jogo" style="display:none;">
+    <h1>Jornada Empreendedora: Crie a Próxima Empresa de Sucesso!</h1>
+
+    <div id="status" class="status">
+        <div class="stats">
+            <div class="stat" id="vida-stat">Vida: 0</div>
+            <div class="stat" id="dinheiro-stat">Dinheiro: R$0</div>
+            <div class="stat" id="dano-stat">Dano: 0</div>
+            <div class="stat" id="posicao-stat">Casa: 0</div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progresso" style="width: 0%">0%</div>
+        </div>
+    </div>
+    <div id="descricao" class="descricao"></div>
+    <div id="jogo" class="tabuleiro"></div>
+</div>
 
 <script>
+// Funções para controle das telas
+function iniciarJogo() {
+    document.getElementById("tela-inicial").style.display = "none";
+    document.getElementById("conteudo-jogo").style.display = "block";
+    iniciarEscolha();
+}
+
+function mostrarCreditos() {
+    document.getElementById("tela-inicial").style.display = "none";
+    document.getElementById("tela-creditos").style.display = "block";
+}
+
+function voltarInicio() {
+    document.getElementById("tela-creditos").style.display = "none";
+    document.getElementById("tela-inicial").style.display = "block";
+}
+
 let statusJogador = {
     vida: 0,
     dinheiro: 0,
@@ -149,40 +191,40 @@ const combinacoesValidas = {
 };
 
 const descricoes = {
-    MEI: "MEI (Microempreendedor Individual): Pequenos negócios com menos burocracia e limite de faturamento.",
-    ME: "ME (Microempresa): Faturamento maior que MEI, mais obrigações, mas mais possibilidades de atuação.",
-    EPP: "EPP (Empresa de Pequeno Porte): Para negócios com faturamento ainda maior, com mais exigências legais.",
-    EI: "EI (Empresário Individual): O empresário responde com o próprio patrimônio.",
-    SLU: "SLU (Sociedade Limitada Unipessoal): Um único dono, mas com proteção patrimonial.",
-    LTDA: "LTDA (Sociedade Limitada): Sociedade com dois ou mais sócios, com responsabilidade limitada.",
-    Comércio: "Comércio: Atividades de venda de produtos físicos ou online.",
-    Serviços: "Serviços: Prestação de serviços como consultoria, saúde, tecnologia, etc.",
-    Indústria: "Indústria: Produção e transformação de bens, com maior carga regulatória.",
-    "Simples Nacional": "Simples Nacional: Regime unificado e simplificado de tributos, com alíquotas reduzidas.",
-    "Lucro Presumido": "Lucro Presumido: Tributação sobre uma margem de lucro pré-estimada pela Receita Federal.",
-    "Lucro Real": "Lucro Real: Tributação sobre o lucro real apurado, com maior complexidade contábil."
+    MEI: "MEI (Microempreendedor individual): Começar sendo MEI é uma forma simples de iniciar uma empresa que ainda precisa de ajustes de mercado e tempo para crescer. A menor burocracia, impostos fixos e baixos, e registro facilitado são algumas vantagens, entretanto, essa classe permite um faturamento limitado a R$ 81 mil por ano, sendo possível a contratação de um único funcionário. É ideal para quem quer formalizar um pequeno negócio de forma rápida e econômica.",
+    ME: "EPP (Empresa de Pequeno Porte): Sendo uma EPP, seu empreendimento já está em fase de crescimento, com faturamento entre R$ 360 mil e R$ 4,8 milhões. Esse regime recebe mais possibilidades de expansão, como a contratação de mais funcionários e a abertura de filiais, mas também assume obrigações contábeis mais robustas: manter livros contábeis organizados e enviar declarações fiscais frequentes.",
+    EPP: "EPP (Empresa de Pequeno Porte): Sendo uma EPP, seu empreendimento já está em fase de crescimento, com faturamento entre R$ 360 mil e R$ 4,8 milhões. Esse regime recebe mais possibilidades de expansão, como a contratação de mais funcionários e a abertura de filiais, mas também assume obrigações contábeis mais robustas: manter livros contábeis organizados e enviar declarações fiscais frequentes.<br><br><br>E aí, vai apostar no seguro ou planejar alto para expandir com tudo?",
+    EI: "EI (Empreendedor Individual): É a forma mais simples de abrir uma empresa sem sócios. Nesse caso, o dono e a empresa são legalmente a mesma pessoa, ou seja: não há separação entre os bens pessoais e os da empresa e, nesse caso, se houver dívidas, o patrimônio do empreendedor (como casa, carro, poupança) pode ser usado para quitá-las. As vantagens, entretanto, são a menor burocracia no início e o controle total do negócio, ideal para atividades menores e quem quer agilidade para começar.",
+    SLU: "SLU (Sociedade Limitada Unipessoal): Tipo de empresa onde há apenas um dono, mas aqui, esse tem proteção patrimonial, havendo separação entre os bens da empresa e do dono. É uma boa opção para quem quer empreender sozinho, com mais segurança jurídica e menos risco pessoal, entretanto, envolve mais gastos com contabilidade regular e taxas.",
+    LTDA: "LTDA (Sociedade Limitada): Estrutura para empresas regidas por dois ou mais sócios em que cada um tem responsabilidade limitada à sua parte no capital social da empresa. É uma das mais usadas no Brasil e, como vantagem, oferece a divisão de responsabilidades e maior possibilidade de captar investimentos, entretanto, exige contratos burocráticos mais detalhados e abre margem para conflitos entre os sócios e menos agilidade nas decisões.",
+    Comércio: "Comércio: atividades voltadas para a compra e venda de produtos, podendo ser lojas físicas, online, atacadistas ou varejistas. Exemplo: lojas, supermercados e distribuidoras.",
+    Serviços: "Serviços: envolve a prestação de atividades que atendem às necessidades das pessoas ou de outras empresas, sem a produção de bens físicos. Nesse grupo estão incluídas consultorias, salões de beleza, empresas de reparos e até serviços digitais como empresas de TI.",
+    Indústria: "Indústria: Refere-se à produção ou transformação de matérias-primas em produtos finais e prontos para a venda. Essa categoria inclui usinas e oficinas que criam bens para o mercado, como fábricas de móveis, alimentos ou montadora de veículos.<br><br><br>E aí, a qual grupo pertence sua ideia inovadora?",
+    "Simples Nacional": "Simples Nacional: Esse é um regime unificado e com regras mais simples. Reúne vários tributos (como IRPJ, CSLL, PIS, COFINS, INSS e ICMS/ISS) em uma única guia mensal (DAS), sendo o valor (alíquota) variável conforme o faturamento e CNAE. Mas cuidado, alguns negócios, como empresas de atividades financeiras e com sócios no exterior, não podem aderi-lás.",
+    "Lucro Presumido": "Lucro Presumido: Regime em que os impostos são calculados baseados em uma estimativa de lucro. Nesse caso, o governo presume quanto sua empresa lucra, com base no faturamento, e aplica uma alíquota fixa sobre esse valor. A burocracia é menor que no regime de Lucro Real, mas pode sair caro se sua margem de lucro for baixa.",
+    "Lucro Real": "Lucro Real: Regime mais técnico e detalhado em que os impostos são calculados com base no lucro real obtido e declarado pela empresa. É obrigatório para faturamentos acima de R$ 78 milhões por ano ou de setores específicos, sendo recomendado quando há margem de lucro reduzida ou muitas despesas dedutíveis, o que implica em um maior controle fiscal e contábil."
 };
 
 const explicacoesEtapas = {
-    1: "📄 Elaboração do Contrato Social: Documento que define regras, sócios e capital da empresa.",
-    2: "📄 Contrato Social (continuação): Definição de cláusulas de proteção aos sócios.",
-    3: "🏢 Registro na Junta Comercial: Etapa de legalização da empresa no órgão estadual.",
-    4: "🏢 Junta Comercial (continuação): Escolha entre registro digital ou presencial.",
-    6: "🆔 Obtenção do CNPJ: Cadastro da sua empresa na Receita Federal.",
-    7: "🆔 CNPJ (continuação): Escolha sobre incluir atividades extras (CNAEs).",
-    8: "🧾 Inscrição Estadual: Obrigatória para quem vende produtos e paga ICMS.",
-    9: "🧾 Inscrição Estadual (continuação): Possibilidade de pagar taxa extra para agilizar."
+    1: "📄 Elaboração do Contrato Social: Esse documento dá origem legal à empresa, funcionando como uma certidão de nascimento do negócio, estando nele definidos qual será o nome e o tipo de atividade da empresa, quem são os sócios, regras de investimento, como serão tomadas as decisões e como os lucros serão distribuídos. Para muitos órgãos públicos e instituições financeiras, o contrato social é a base para reconhecer a existência da empresa e autorizar seu funcionamento.",
+    2: "📄 Cláusula de proteção aos sócios: A cláusula de proteção aos sócios garante que os bens pessoais dos sócios não serão usados para pagar dívidas da empresa, limitando a responsabilidade deles ao valor investido no negócio. Importante porque oferece segurança jurídica, protegendo o patrimônio individual em caso de problemas financeiros na empresa. Se sua empresa for LTDA, pense bem.",
+    3: "🏢 Registro na Junta Comercial: O registro na Junta Comercial é o primeiro passo formal para abrir uma empresa, é nele que o contrato social é homologado, deixando o negócio juridicamente válido e abrindo possibilidade da empresa obter CNPJ, inscrição estadual ou municipal e alvarás. Sem ele, a empresa não pode emitir nota fiscal ou abrir conta bancária empresarial.",
+    4: "🏢 Junta online ou presencial: Registrar a empresa digitalmente na Junta Comercial é mais rápido e prático, além de reduzir custos com deslocamento e impressão de documentos. Em muitos estados, o processo online é integrado a outros órgãos, agilizando a liberação do CNPJ e alvarás. Por outro lado, o registro presencial pode ser útil quando há dúvidas ou documentos físicos complexos, sendo mais lento e sujeito a filas.",
+    6: "🆔 Obtenção do CNPJ: Cadastrar sua empresa na Receita Federal é essencial para obter o CNPJ, que funciona como o “CPF” do seu negócio. Sem ele, a empresa não pode emitir nota fiscal, abrir conta bancária empresarial ou operar legalmente. Esse processo pode ser feito com a ajuda de um contador, essencial para garantir que essa e todas as obrigações fiscais e contábeis sejam cumpridas corretamente, evitando erros que podem gerar multas ou problemas fiscais.",
+    7: "🆔 Inclusão de CNAEs: Pensando na expansão do seu negócio, é possível incluir atividades extras no CNAE, permitindo que a empresa atue legalmente em mais de uma área além da principal, oferecendo flexibilidade para crescer e diversificar. No entanto, essa escolha pode trazer obrigações fiscais diferentes, aumentar a complexidade contábil e, em alguns casos, impedir o enquadramento no Simples Nacional. Por isso, pense bem, essa é uma decisão estratégica.",
+    8: "🧾 Inscrição Estadual: É um registro obrigatório das empresas que vendem produtos físicos na Secretaria da Fazenda do estado onde atuam, levando à geração de um número que identifica o negócio como contribuinte do ICMS (Imposto sobre Circulação de Mercadorias e Serviços). Sem ela, a empresa não pode emitir nota fiscal de vendas nem operar legalmente no comércio, sendo assim, normalmente, para entender melhor as exigências desse cadastro e evitar erros, muitos empreendedores optam por contratar uma consultoria contábil, que orienta sobre as obrigações conforme a lei.",
+    9: "🧾 Acelerar inscrição estadual: Em alguns estados, tendo toda a documentação correta e o CNPJ ativo, é possível pagar uma taxa extra para agilizar a liberação da inscrição estadual, acelerando o início das atividades da empresa. "
 };
 
 const perguntasPorCasa = {
-    1: { pergunta: "Contrato Social: Você prefere contratar um advogado especializado ou usar um modelo gratuito da internet?", op1: {texto:"💸 R$150: Advogado (+10 vida, +5 dano)", vida:10, dano:5, dinheiro:-150}, op2:{texto:"Grátis: Modelo da internet (-10 vida)", vida:-10, dano:0, dinheiro:0} },
-    2: { pergunta: "Incluir cláusulas de proteção de sócios?", op1:{texto:"💸 R$100: Sim (+5 vida, +5 dano)", vida:5, dano:5, dinheiro:-100}, op2:{texto:"Grátis: Não (-10 vida)", vida:-10, dano:0, dinheiro:0} },
-    3: { pergunta: "Contratar despachante para registro ou fazer sozinho?", op1:{texto:"💸 R$120: Despachante (+10 vida)", vida:10, dano:0, dinheiro:-120}, op2:{texto:"Grátis: Sozinho (-5 vida)", vida:-5, dano:0, dinheiro:0} },
-    4: { pergunta: "Registrar digital ou presencial?", op1:{texto:"Grátis: Digital (+5 dano)", vida:0, dano:5, dinheiro:0}, op2:{texto:"Grátis: Presencial (-5 vida)", vida:-5, dano:0, dinheiro:0} },
-    6: { pergunta: "Contratar contador para CNPJ?", op1:{texto:"💸 R$100: Sim (+5 vida, +5 dano)", vida:5, dano:5, dinheiro:-100}, op2:{texto:"Grátis: Não (-10 vida)", vida:-10, dano:0, dinheiro:0} },
-    7: { pergunta: "Incluir mais atividades no CNAE pagando taxa extra?", op1:{texto:"💸 R$80: Sim (+5 dano)", vida:0, dano:5, dinheiro:-80}, op2:{texto:"Grátis: Não (Sem efeito)", vida:0, dano:0, dinheiro:0} },
-    8: { pergunta: "Pagar consultoria para Inscrição Estadual?", op1:{texto:"💸 R$120: Sim (+10 vida)", vida:10, dano:0, dinheiro:-120}, op2:{texto:"Grátis: Não (-10 vida)", vida:-10, dano:0, dinheiro:0} },
-    9: { pergunta: "Antecipar processo pagando taxa urgente?", op1:{texto:"💸 R$80: Sim (+5 dano)", vida:0, dano:5, dinheiro:-80}, op2:{texto:"Grátis: Não (Sem efeito)", vida:0, dano:0, dinheiro:0} }
+    1: { pergunta: "Para a elaboração do Contrato Social da sua empresa você prefere contratar um advogado/contador especializado ou usar um modelo gratuito da internet?", op1: {texto:"💸 R$150: Advogado/contador (+10 vida, +5 dano)", vida:10, dano:5, dinheiro:-150}, op2:{texto:"Grátis: Modelo da internet (-10 vida)", vida:-10, dano:0, dinheiro:0} },
+    2: { pergunta: "Você gostaria de incluir cláusulas de proteção aos sócios dentro do Contrato Social da sua empresa?", op1:{texto:"💸 R$100: Sim (+5 vida, +5 dano)", vida:5, dano:5, dinheiro:-100}, op2:{texto:"Grátis: Não (-10 vida)", vida:-10, dano:0, dinheiro:0} },
+    3: { pergunta: "Para a elaboração da Junta Comercial, você gostaria de contratar um contador para realizá-la ou deseja fazer sozinho?", op1:{texto:"💸 R$120: Despachante (+10 vida)", vida:10, dano:0, dinheiro:-120}, op2:{texto:"Grátis: Sozinho (-5 vida)", vida:-5, dano:0, dinheiro:0} },
+    4: { pergunta: "Em relação ao registro da Junta Comercial, você prefere registrar de forma online ou presencial? ", op1:{texto:"Grátis: Digital (+5 dano)", vida:0, dano:5, dinheiro:0}, op2:{texto:"Grátis: Presencial (-5 vida)", vida:-5, dano:0, dinheiro:0} },
+    6: { pergunta: "Para a obtenção do seu CNPJ (Cadastro Nacional da Pessoa Jurídica), você gostaria de contratar um contador para obtê-lo?", op1:{texto:"💸 R$100: Sim (+5 vida, +5 dano)", vida:5, dano:5, dinheiro:-100}, op2:{texto:"Grátis: Não (-10 vida)", vida:-10, dano:0, dinheiro:0} },
+    7: { pergunta: "Você deseja adicionar atividades extras ao seu CNAE (Classificação Nacional de Atividades Econômicas)? Isso vai resultar em uma cobrança de taxa extra.", op1:{texto:"💸 R$80: Sim (+5 dano)", vida:0, dano:5, dinheiro:-80}, op2:{texto:"Grátis: Não (Sem efeito)", vida:0, dano:0, dinheiro:0} },
+    8: { pergunta: "Pensando em evitar erros durante o cadastro da Inscrição Estadual, você gostaria de pagar uma consultoria contábil?", op1:{texto:"💸 R$120: Sim (+10 vida)", vida:10, dano:0, dinheiro:-120}, op2:{texto:"Grátis: Não (-10 vida)", vida:-10, dano:0, dinheiro:0} },
+    9: { pergunta: "O seu estado está contemplado na lista, assim, você gostaria de pagar a taxa extra para acelerar a liberação da sua Inscrição estadual?", op1:{texto:"💸 R$80: Sim (+5 dano)", vida:0, dano:5, dinheiro:-80}, op2:{texto:"Grátis: Não (Sem efeito)", vida:0, dano:0, dinheiro:0} }
 };
 
 function mostrarDescricao(texto) {
@@ -254,7 +296,7 @@ function escolherPorte(porte) {
 
     html += `</div>`;
 
-    let texto = "Naturezas Jurídicas:\n\n";
+    let texto = "Boa escolha! Mas antes de colocar sua ideia no mundo, você precisa decidir como sua empresa vai existir legalmente, essa escolha define como você será visto pelo governo e o quanto do seu próprio patrimônio estará em jogo, sendo uma decisão que pode proteger (ou comprometer) seu bolso, sua segurança e o futuro do seu negócio. No jogo, ela vai impactar suas vidas, patrimônio e dano, importantes contra os chefes da burocracia.<br><br>Escolha com sabedoria: é aqui que começa sua jornada como empreendedor.<br><br>Naturezas Jurídicas:\n\n";
     combinacoesValidas[porte].naturezas.forEach(n => texto += descricoes[n] + "\n\n");
     mostrarDescricao(texto);
 
@@ -276,7 +318,7 @@ function escolherNatureza(natureza) {
 
     html += `</div>`;
 
-    let texto = "CNAEs disponíveis:\n\n";
+    let texto = "A Classificação Nacional de Atividades Econômicas é um código que identifica qual é a atividade principal da sua empresa, servindo para o governo entender o que sua empresa faz, podendo assim aplicar regras e tributos para cada tipo de negócio. Escolher o CNAE correto influencia o regime tributário, as licenças necessárias e as regras fiscais que sua empresa deverá seguir.<br><br><br>CNAEs disponíveis:\n\n";
     combinacoesValidas[statusJogador.empresa.porte].cnaes.forEach(c => texto += descricoes[c] + "\n\n");
     mostrarDescricao(texto);
 
@@ -298,7 +340,7 @@ function escolherCNAE(cnae) {
 
     html += `</div>`;
 
-    let texto = "Regimes Tributários:\n\n";
+    let texto = "O regime tributário define como vai ser calculado os impostos da sua empresa e como ela vai pagar. A escolha depende do tipo de atividade, faturamento e estrutura do negócio, sendo que um regime adequado a sua empresa pode significar menos impostos e burocracia.<br><br><br>Regimes Tributários:\n\n";
     combinacoesValidas[statusJogador.empresa.porte].regimes.forEach(r => texto += descricoes[r] + "\n\n");
     mostrarDescricao(texto);
 
@@ -422,8 +464,27 @@ function iniciarCombate(casa) {
     
     statusJogador.inimigoAtual = inimigo;
     
+    let mensagemBatalha = "";
+    if (casa === 5) {
+        mensagemBatalha = `
+            <div style="background-color:#f9f9f9; padding:15px; margin-bottom:20px; border-left:4px solid #e74c3c;">
+                <p>Depois de escolher sua classe, definir sua natureza jurídica e registrar sua empresa na Junta Comercial, você sente o chão tremer e, ao longe, um rugido ecoa pelos corredores da burocracia: o Leão da Receita Federal está à espreita.</p>
+                <p>Ele fareja omissões, devora erros fiscais e pune aventureiros despreparados. Para enfrentá-lo, você precisa mostrar que sua empresa está em ordem: impostos pagos, declarações entregues e nenhuma pendência no reino do CNPJ.</p>
+            </div>
+        `;
+    } else {
+        mensagemBatalha = `
+            <div style="background-color:#f9f9f9; padding:15px; margin-bottom:20px; border-left:4px solid #3498db;">
+                <p>Você achou que a batalha contra o Leão da Receita era o fim? Não tão rápido. Com prancheta em punho e olhar afiado, a Fiscalização Municipal aparece examinando placas, alvarás, licenças, acessibilidade, barulho, horário de funcionamento… nada escapa aos seus olhos treinados.</p>
+                <p>Esse é o teste final. Se sua empresa está em dia com as licenças e exigências burocráticas do município, você avança com o prêmio de poder seguir com o seu negócio após todos os passos burocráticos até aqui, mas se faltou um documento... prepare-se para advertências, multas ou até o temido embargo.</p>
+                <p>Você vai enfrentá-la tendo tudo regularizado?</p>
+            </div>
+        `;
+    }
+    
     document.getElementById("jogo").innerHTML = `
         <div style="text-align:center;">
+            ${mensagemBatalha}
             <div class="battle-container">
                 <div>
                     ${mostrarJogador()}
@@ -625,8 +686,6 @@ function inimigoAtacaSerasa() {
         `;
     }
 }
-
-iniciarEscolha();
 </script>
 
 </body>
